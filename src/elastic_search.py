@@ -1,4 +1,6 @@
 from elasticsearch import Elasticsearch, helpers
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
 
 class ElasticSearch:
     def __init__(self, url):
@@ -59,6 +61,8 @@ class ElasticSearch:
         helpers.bulk(self.es, actions)
         print(f"{len(_weapons_list)} weapons added")
 
+
+
     def add_emotion(self):
         """
         read tweets
@@ -66,6 +70,47 @@ class ElasticSearch:
         then insert new row
         :return:
         """
+        analyze = SentimentIntensityAnalyzer()
+
+        # def find_emotional_status_text():
+        #     """
+        #     Calculate an emotional ttype of a text.
+        #     By using external Module.
+        #     The emotion can be one of them: negative, positive, neutral.
+        #     :return:
+        #     """
+        #
+        #     def absolute_emotion(_emotion_compound):
+        #         """
+        #         Receive a compound of emotients, and return an emotion.
+        #         :param _emotion_compound:
+        #         :return: str
+        #         """
+        #
+        #         if 0.5 < _emotion_compound <= 1:
+        #             return "positive"
+        #         elif _emotion_compound >= -0.5:
+        #             return "neutral"
+        #         else:
+        #             return "negative"
+        #
+        #     nltk.download('vader_lexicon', download_dir=".")
+        #     for i in range(x.size):
+        #         emotion_index = analyze.polarity_scores(self.original_text.iloc[i])
+        #     return
+        self.get_index_docs(self.TWEETS_INDEX)
+
+    def _update_doc(self, _documents, _index):
+        actions = [
+            {
+                "_op_type": "update",
+                "_index" : _index,
+                "_id":doc["_id"],
+                "doc":doc
+            }
+            for doc in _documents
+        ]
+        helpers.bulk(self.es, actions)
 
     def filter_index(self):
         """
@@ -75,14 +120,23 @@ class ElasticSearch:
         and emotion is positive or neutral.
         :return:
         """
+
     def match_weapon_to_doc(self):
         """
         run over each row, then check what weapon is inside the text.
         add all matches to a list, and add the list to new col.
         :return:
         """
-    def get_all_docs(self):
-        pass
+
+    def get_index_docs(self, index : str) -> list:
+        result = []
+        docs = helpers.scan(self.es, index=index)
+        for doc in docs:
+            source = doc["source"]
+            source["_id"] = doc["_id"]
+            result.append(source)
+        return result
+
     def get_docs_with_greater_then_two_weapons(self):
         pass
     @staticmethod
