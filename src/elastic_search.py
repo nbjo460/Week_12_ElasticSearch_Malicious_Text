@@ -8,6 +8,9 @@ class ElasticSearch:
         self.TWEETS_INDEX = "tweets"
         self.WEAPONS_INDEX = "weapons"
 
+        self.EMOTION = "emotion"
+        self.WEAPON = "weapon"
+
 
 
     def load_data(self, _tweets_list, _weapons_list):
@@ -66,51 +69,56 @@ class ElasticSearch:
     def add_emotion(self):
         """
         read tweets
-        then add emotion each row
-        then insert new row
+        then add emotion each dict
+        then update the docs
         :return:
         """
         analyze = SentimentIntensityAnalyzer()
+        nltk.download('vader_lexicon', download_dir=".")
 
-        # def find_emotional_status_text():
-        #     """
-        #     Calculate an emotional ttype of a text.
-        #     By using external Module.
-        #     The emotion can be one of them: negative, positive, neutral.
-        #     :return:
-        #     """
-        #
-        #     def absolute_emotion(_emotion_compound):
-        #         """
-        #         Receive a compound of emotients, and return an emotion.
-        #         :param _emotion_compound:
-        #         :return: str
-        #         """
-        #
-        #         if 0.5 < _emotion_compound <= 1:
-        #             return "positive"
-        #         elif _emotion_compound >= -0.5:
-        #             return "neutral"
-        #         else:
-        #             return "negative"
-        #
-        #     nltk.download('vader_lexicon', download_dir=".")
-        #     for i in range(x.size):
-        #         emotion_index = analyze.polarity_scores(self.original_text.iloc[i])
-        #     return
-        self.get_index_docs(self.TWEETS_INDEX)
+        def find_emotional_status_text():
+            """
+            Calculate an emotional ttype of a text.
+            By using external Module.
+            The emotion can be one of them: negative, positive, neutral.
+            :return:
+            """
 
-    def _update_doc(self, _documents, _index):
+            def absolute_emotion(_emotion_compound):
+                """
+                Receive a compound of emotients, and return an emotion.
+                :param _emotion_compound:
+                :return: str
+                """
+
+                if 0.5 < _emotion_compound <= 1:
+                    return "positive"
+                elif _emotion_compound >= -0.5:
+                    return "neutral"
+                else:
+                    return "negative"
+
+            for i in range(len(tweets)):
+                emotion_index = analyze.polarity_scores(tweets[i]["_source"]["text"])
+                tweets[i]["_source"][self.EMOTION] = absolute_emotion(emotion_index["compound"])
+            return tweets
+
+        tweets = self.get_index_docs(self.TWEETS_INDEX)
+        documents = find_emotional_status_text()
+        self._update_doc_wit_new_parameter(documents, self.TWEETS_INDEX, self.EMOTION)
+
+    def _update_doc_wit_new_parameter(self, _documents, _index, _new_parameter):
         actions = [
             {
                 "_op_type": "update",
                 "_index" : _index,
                 "_id":doc["_id"],
-                "doc":doc
+                "doc":{_new_parameter : doc["_source"][_new_parameter]},
             }
             for doc in _documents
         ]
         helpers.bulk(self.es, actions)
+        print("Updated succeed")
 
     def filter_index(self):
         """
@@ -132,7 +140,7 @@ class ElasticSearch:
         result = []
         docs = helpers.scan(self.es, index=index)
         for doc in docs:
-            source = doc["source"]
+            source = doc
             source["_id"] = doc["_id"]
             result.append(source)
         return result
