@@ -1,4 +1,4 @@
-
+from execptions.exceptions import FileNotFound
 class Loader:
     def __init__(self, _weapons_list :str = "", _tweets : str = ""):
         self.FILES_PATH = "../data/"
@@ -18,8 +18,8 @@ class Loader:
                 for line in file:
                     weapons.append(line)
             return weapons
-        except Exception as e:
-            print("Weapons file is missing!\n" + e)
+        except FileNotFoundError:
+            raise FileNotFound(self.WEAPONS_LIST_FILE_NAME)
 
     def get_tweets_list(self) -> list:
         try:
@@ -28,8 +28,8 @@ class Loader:
                 for line in file:
                     tweets.append(line)
             return tweets
-        except Exception as e:
-            print("Weapon file is missing!\n" + e)
+        except FileNotFoundError:
+            raise FileNotFound(self.TWEETS_FILE_NAME)
 
     @staticmethod
     def _validate_files_names(_files_path ,_weapons_list_file_name, _tweets_file_name):

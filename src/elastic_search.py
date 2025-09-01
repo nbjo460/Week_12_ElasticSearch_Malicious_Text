@@ -1,6 +1,8 @@
+from elasticsearch import Elasticsearch
+
 class ElasticSearch:
-    def __init__(self):
-        pass
+    def __init__(self, url):
+        self.es = Elasticsearch(url)
     def load_tweets_to_elastic(self):
         pass
     def add_emotion(self):
