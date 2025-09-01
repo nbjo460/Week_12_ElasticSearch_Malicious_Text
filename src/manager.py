@@ -1,5 +1,7 @@
 from elastic_search import ElasticSearch
 from loader import Loader
+import endpoint
+import uvicorn
 
 class Manager:
     def __init__(self):
@@ -31,5 +33,6 @@ class Manager:
         self.es.match_weapon_to_doc()
         self.es.filter_index()
 
+    @staticmethod
     def endpoint(self):
-        pass
+        uvicorn.run(endpoint.app, host="0.0.0.0", port = 8000)
