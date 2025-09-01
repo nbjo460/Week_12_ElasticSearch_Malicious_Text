@@ -1,4 +1,6 @@
 from execptions.exceptions import FileNotFound
+import csv
+
 class Loader:
     def __init__(self, _weapons_list :str = "", _tweets : str = ""):
         self.FILES_PATH = "../data/"
@@ -14,20 +16,17 @@ class Loader:
         """
         try:
             weapons = []
-            with open(self.FILES_PATH + self.WEAPONS_LIST_FILE_NAME, "r") as file:
+            with open(self.FILES_PATH + self.WEAPONS_LIST_FILE_NAME, "r", encoding='utf8') as file:
                 for line in file:
-                    weapons.append(line)
+                    weapons.append(line[:-1])
             return weapons
         except FileNotFoundError:
             raise FileNotFound(self.WEAPONS_LIST_FILE_NAME)
 
     def get_tweets_list(self) -> list:
         try:
-            tweets = []
-            with open(self.FILES_PATH + self.TWEETS_FILE_NAME, "r") as file:
-                for line in file:
-                    tweets.append(line)
-            return tweets
+            with open(self.FILES_PATH + self.TWEETS_FILE_NAME, "r", newline='', encoding='utf8') as file:
+                return list(csv.DictReader(file))
         except FileNotFoundError:
             raise FileNotFound(self.TWEETS_FILE_NAME)
 

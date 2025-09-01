@@ -1,6 +1,7 @@
 from manager import Manager
 
-manager = Manager()
-manager.load()
-manager.search()
-manager.endpoint()
+if __name__ == "__main__":
+    manager = Manager()
+    manager.load_data()
+    manager.search()
+    manager.endpoint()
