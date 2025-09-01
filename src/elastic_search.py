@@ -3,8 +3,9 @@ from elasticsearch import Elasticsearch
 class ElasticSearch:
     def __init__(self, url):
         self.es = Elasticsearch(url)
-    def load_tweets_to_elastic(self):
-        pass
+    def load_tweets_to_elastic(self, _tweets_list, _weapons_list):
+
+         pass
     def add_emotion(self):
         """
         read tweets
