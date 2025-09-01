@@ -34,5 +34,5 @@ class Manager:
         self.es.filter_index()
 
     @staticmethod
-    def endpoint(self):
+    def endpoint():
         uvicorn.run(endpoint.app, host="0.0.0.0", port = 8000)
