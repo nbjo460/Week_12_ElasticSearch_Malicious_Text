@@ -3,6 +3,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
 
 class ElasticSearch:
+
     def __init__(self, url):
         self.es = self._set_elastic(url)
         self.TWEETS_INDEX = "tweets"
@@ -10,6 +11,12 @@ class ElasticSearch:
 
         self.EMOTION = "emotion"
         self.WEAPON = "weapon"
+
+        self.POSITIVE = "positive"
+        self.NEUTRAL = "neutral"
+        self.NEGATIVE = "negative"
+
+        self.ANTISEMITIC = "Antisemitic"
 
 
 
@@ -58,13 +65,11 @@ class ElasticSearch:
         actions = [
             {
                 "_index": self.WEAPONS_INDEX,
-                "_source": {"value" : weapon}
+                "_source": {"name" : weapon}
             }
             for weapon in _weapons_list]
         helpers.bulk(self.es, actions)
         print(f"{len(_weapons_list)} weapons added")
-
-
 
     def add_emotion(self):
         """
@@ -92,11 +97,11 @@ class ElasticSearch:
                 """
 
                 if 0.5 < _emotion_compound <= 1:
-                    return "positive"
+                    return self.POSITIVE
                 elif _emotion_compound >= -0.5:
-                    return "neutral"
+                    return self.NEUTRAL
                 else:
-                    return "negative"
+                    return self.NEGATIVE
 
             for i in range(len(tweets)):
                 emotion_index = analyze.polarity_scores(tweets[i]["_source"]["text"])
@@ -105,9 +110,9 @@ class ElasticSearch:
 
         tweets = self.get_index_docs(self.TWEETS_INDEX)
         documents = find_emotional_status_text()
-        self._update_doc_wit_new_parameter(documents, self.TWEETS_INDEX, self.EMOTION)
+        self._update_doc_with_new_parameter(documents, self.TWEETS_INDEX, self.EMOTION)
 
-    def _update_doc_wit_new_parameter(self, _documents, _index, _new_parameter):
+    def _update_doc_with_new_parameter(self, _documents, _index, _new_parameter):
         actions = [
             {
                 "_op_type": "update",
@@ -128,6 +133,20 @@ class ElasticSearch:
         and emotion is positive or neutral.
         :return:
         """
+        query={
+            "query": {
+                "bool": {
+                    "should": [
+                        {"match": {self.EMOTION: self.NEUTRAL}},
+                        {"match": {self.EMOTION: self.POSITIVE}},
+                        {"match": {self.ANTISEMITIC: "0"}}
+                    ],
+                    "minimum_should_match": 2
+                }
+            }
+        }
+        deleted_result = self.es.delete_by_query(index=self.TWEETS_INDEX, body=query)
+        print(f"Deleted {deleted_result["deleted"]} tweets")
 
     def match_weapon_to_doc(self):
         """
