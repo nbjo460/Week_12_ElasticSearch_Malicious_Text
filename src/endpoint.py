@@ -10,5 +10,5 @@ def root():
 def download_all():
     search = ElasticSearch("http://localhost:9200")
     result = search.get_index_docs(search.TWEETS_INDEX)
-    print(result)
+    return result
 # @app.get("/")

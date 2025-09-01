@@ -35,4 +35,4 @@ class Manager:
 
     @staticmethod
     def endpoint():
-        uvicorn.run(endpoint.app, host="0.0.0.0", port = 8000)
+        uvicorn.run(endpoint.app, host="0.0.0.0", port = 8040)
